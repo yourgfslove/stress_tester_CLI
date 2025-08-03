@@ -1,14 +1,31 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/yourgfslove/stressTester/internal/application"
 	"github.com/yourgfslove/stressTester/internal/commands"
-	// "github.com/yourgfslove/stressTester/internal/config"
+	"github.com/yourgfslove/stressTester/internal/config"
 )
 
 func main() {
-	// cfg := config.MustLoadConfig()
-	commands := commands.MustInitCommands()
-	application.Start(commands)
-	// TODO: inti cmds(maybe map or idk)
+	cfg := config.MustLoadConfig()
+	commands := commands.MustInitCommands(*cfg)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	application.Start(ctx, commands)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-stop
+		fmt.Println("interupted")
+		cancel()
+	}()
+	if err := application.Start(ctx, commands); err != nil {
+		fmt.Println("Error", err)
+	}
 }
