@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	OutputFolder string `yaml:"output_folder" env-required:"true"`
+	NumWorkers   int    `yaml:"workers_amount" env-default:"10"`
 }
 
 func MustLoadConfig() *Config {

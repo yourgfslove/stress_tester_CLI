@@ -17,13 +17,12 @@ func main() {
 	commands := commands.MustInitCommands(*cfg)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	application.Start(ctx, commands)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-stop
-		fmt.Println("interupted")
 		cancel()
+		fmt.Println("interupted")
 	}()
 	if err := application.Start(ctx, commands); err != nil {
 		fmt.Println("Error", err)

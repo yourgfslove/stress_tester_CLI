@@ -18,12 +18,14 @@ func Run(ctx context.Context, Client *http.Client, results chan<- Result, jobs <
 		select {
 		case <-ctx.Done():
 			return
-		case req := <-jobs:
+		case req, ok := <-jobs:
+			if !ok {
+				return
+			}
 			start := time.Now()
 			resp, err := Client.Do(req)
 			var res Result
 			res.Duration = time.Since(start)
-
 			if err != nil {
 				res.Success = false
 				res.Error = err.Error()
