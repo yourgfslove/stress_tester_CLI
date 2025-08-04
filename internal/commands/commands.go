@@ -82,8 +82,8 @@ func stressTest(cfg config.Config, args []string) error {
 	client := http.DefaultClient
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(times)*time.Second)
 	defer cancel()
-	jobs := make(chan *http.Request)
-	results := make(chan worker.Result, 10)
+	jobs := make(chan *http.Request, 100)
+	results := make(chan worker.Result, 100)
 
 	wg := &sync.WaitGroup{}
 	for i := 0; i <= cfg.NumWorkers; i++ {
@@ -125,7 +125,6 @@ func stressTest(cfg config.Config, args []string) error {
 	for k, v := range sum.StatusCodes {
 		fmt.Printf(" -%d: %d\n", k, v)
 	}
-	fmt.Println(time.Second / time.Duration(rps))
 	return nil
 }
 

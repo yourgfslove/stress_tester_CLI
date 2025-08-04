@@ -7,6 +7,7 @@ import (
 )
 
 type StressSummary struct {
+	URL         string
 	Success     int
 	Fail        int
 	MaxLatency  time.Duration
@@ -23,12 +24,13 @@ func Aggregator(summary chan<- StressSummary, results <-chan worker.Result) {
 		if v.Duration > sum.MaxLatency {
 			sum.MaxLatency = v.Duration
 		}
+		sum.URL = v.URL
 		if v.Success {
 			sum.Success++
+			sum.StatusCodes[v.StatusCode]++
 		} else {
 			sum.Fail++
 		}
-		sum.StatusCodes[v.StatusCode]++
 	}
 	sum.AvgLatency = (total / (time.Duration(sum.Fail) + time.Duration(sum.Success)))
 	summary <- sum

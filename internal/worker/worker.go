@@ -7,6 +7,7 @@ import (
 )
 
 type Result struct {
+	URL        string
 	StatusCode int
 	Duration   time.Duration
 	Success    bool
@@ -26,13 +27,16 @@ func Run(ctx context.Context, Client *http.Client, results chan<- Result, jobs <
 			resp, err := Client.Do(req)
 			var res Result
 			res.Duration = time.Since(start)
+			res.URL = req.RequestURI
 			if err != nil {
 				res.Success = false
 				res.Error = err.Error()
 			} else {
 				res.Success = true
-				res.StatusCode = resp.StatusCode
-				resp.Body.Close()
+				if resp != nil {
+					res.StatusCode = resp.StatusCode
+					resp.Body.Close()
+				}
 			}
 			results <- res
 		}
