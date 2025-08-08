@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/yourgfslove/stressTester/internal/models"
+	"github.com/yourgfslove/stress_tester_CLI/internal/models"
 )
 
 func TestAggregator(t *testing.T) {

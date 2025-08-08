@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/pingcap/log"
-	"github.com/yourgfslove/stressTester/internal/aggregator"
-	"github.com/yourgfslove/stressTester/internal/config"
-	"github.com/yourgfslove/stressTester/internal/lib/validation"
-	"github.com/yourgfslove/stressTester/internal/models"
-	"github.com/yourgfslove/stressTester/internal/worker"
+	"github.com/yourgfslove/stress_tester_CLI/internal/aggregator"
+	"github.com/yourgfslove/stress_tester_CLI/internal/config"
+	"github.com/yourgfslove/stress_tester_CLI/internal/lib/validation"
+	"github.com/yourgfslove/stress_tester_CLI/internal/models"
+	"github.com/yourgfslove/stress_tester_CLI/internal/worker"
 )
 
 type Command struct {
@@ -110,7 +110,7 @@ func stressTest(ctx context.Context, cfg config.Config, args []string) error {
 			case <-ticker.C:
 				req, err := http.NewRequest(method, link, bytes.NewReader([]byte(data)))
 				if err != nil {
-					log.Error("can not create request")
+					log.Error(fmt.Sprintf("can not create request: %s", err.Error()))
 				}
 				if contentType != "" {
 					req.Header.Set("Content-Type", contentType)

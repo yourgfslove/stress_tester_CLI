@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yourgfslove/stressTester/internal/models"
+	"github.com/yourgfslove/stress_tester_CLI/internal/models"
 )
 
 type WorkerPool struct {

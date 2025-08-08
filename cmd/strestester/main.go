@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yourgfslove/stressTester/internal/application"
-	"github.com/yourgfslove/stressTester/internal/commands"
-	"github.com/yourgfslove/stressTester/internal/config"
+	"github.com/yourgfslove/stress_tester_CLI/internal/application"
+	"github.com/yourgfslove/stress_tester_CLI/internal/commands"
+	"github.com/yourgfslove/stress_tester_CLI/internal/config"
 )
 
 func main() {

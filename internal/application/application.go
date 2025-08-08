@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/yourgfslove/stressTester/internal/commands"
-	"github.com/yourgfslove/stressTester/internal/lib/input"
+	"github.com/yourgfslove/stress_tester_CLI/internal/commands"
+	"github.com/yourgfslove/stress_tester_CLI/internal/lib/input"
 )
 
 func Start(ctx context.Context, commands commands.Commands) error {

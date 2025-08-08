@@ -3,7 +3,7 @@ package aggregator
 import (
 	"time"
 
-	"github.com/yourgfslove/stressTester/internal/models"
+	"github.com/yourgfslove/stress_tester_CLI/internal/models"
 )
 
 func Aggregator(summary chan<- models.StressSummary, results <-chan models.Result) {
