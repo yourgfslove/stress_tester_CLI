@@ -3,31 +3,56 @@ package worker
 import (
 	"context"
 	"net/http"
+	"sync"
 	"time"
+
+	"github.com/yourgfslove/stressTester/internal/models"
 )
 
-type Result struct {
-	URL        string
-	StatusCode int
-	Duration   time.Duration
-	Success    bool
-	Error      string
+type WorkerPool struct {
+	workers int
+	Jobs    chan *http.Request
+	Results chan models.Result
+	client  http.Client
+	ctx     context.Context
+	cancel  context.CancelFunc
+	wg      sync.WaitGroup
 }
 
-func Run(ctx context.Context, Client *http.Client, results chan<- Result, jobs <-chan *http.Request) {
+func NewWorkerPool(workers, buffersize int, client *http.Client) *WorkerPool {
+	ctx, cancel := context.WithCancel(context.Background())
+	return &WorkerPool{
+		workers: workers,
+		Jobs:    make(chan *http.Request, buffersize),
+		Results: make(chan models.Result, buffersize),
+		client:  *client,
+		ctx:     ctx,
+		cancel:  cancel,
+	}
+}
+
+func (wp *WorkerPool) Start() {
+	for i := 0; i < wp.workers; i++ {
+		wp.wg.Add(1)
+		go wp.worker(i)
+	}
+}
+
+func (wp *WorkerPool) worker(id int) {
+	defer wp.wg.Done()
 	for {
 		select {
-		case <-ctx.Done():
+		case <-wp.ctx.Done():
 			return
-		case req, ok := <-jobs:
+		case req, ok := <-wp.Jobs:
 			if !ok {
 				return
 			}
 			start := time.Now()
-			resp, err := Client.Do(req)
-			var res Result
+			resp, err := wp.client.Do(req)
+			var res models.Result
 			res.Duration = time.Since(start)
-			res.URL = req.RequestURI
+			res.URL = req.URL.String()
 			if err != nil {
 				res.Success = false
 				res.Error = err.Error()
@@ -38,7 +63,14 @@ func Run(ctx context.Context, Client *http.Client, results chan<- Result, jobs <
 					resp.Body.Close()
 				}
 			}
-			results <- res
+			wp.Results <- res
 		}
 	}
+}
+
+func (wp *WorkerPool) Stop() {
+	close(wp.Jobs)
+	wp.cancel()
+	wp.wg.Wait()
+	close(wp.Results)
 }

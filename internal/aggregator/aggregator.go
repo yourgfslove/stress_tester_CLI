@@ -3,20 +3,11 @@ package aggregator
 import (
 	"time"
 
-	"github.com/yourgfslove/stressTester/internal/worker"
+	"github.com/yourgfslove/stressTester/internal/models"
 )
 
-type StressSummary struct {
-	URL         string
-	Success     int
-	Fail        int
-	MaxLatency  time.Duration
-	AvgLatency  time.Duration
-	StatusCodes map[int]int
-}
-
-func Aggregator(summary chan<- StressSummary, results <-chan worker.Result) {
-	var sum StressSummary
+func Aggregator(summary chan<- models.StressSummary, results <-chan models.Result) {
+	var sum models.StressSummary
 	sum.StatusCodes = make(map[int]int)
 	var total time.Duration
 	for v := range results {

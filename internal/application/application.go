@@ -24,7 +24,7 @@ func Start(ctx context.Context, commands commands.Commands) error {
 					continue
 				}
 				if command, ok := commands[input[0]]; ok {
-					err := command.Callback(input[1:])
+					err := command.Callback(ctx, input[1:])
 					if err != nil {
 						fmt.Println(err)
 					}

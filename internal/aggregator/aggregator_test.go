@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/yourgfslove/stressTester/internal/worker"
+	"github.com/yourgfslove/stressTester/internal/models"
 )
 
 func TestAggregator(t *testing.T) {
-	input := make(chan worker.Result)
-	result := make(chan StressSummary)
+	input := make(chan models.Result)
+	result := make(chan models.StressSummary)
 	go Aggregator(result, input)
-	results := []worker.Result{
+	results := []models.Result{
 		{URL: "someURL", StatusCode: 200, Duration: (time.Second * 3), Success: true},
 		{URL: "someURL", StatusCode: 400, Duration: (time.Second * 2), Success: true},
 		{URL: "someURL", Duration: (time.Second * 1), Success: false},
