@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -15,6 +14,7 @@ import (
 	"github.com/yourgfslove/stress_tester_CLI/internal/config"
 	"github.com/yourgfslove/stress_tester_CLI/internal/lib/validation"
 	"github.com/yourgfslove/stress_tester_CLI/internal/models"
+	"github.com/yourgfslove/stress_tester_CLI/internal/output"
 	"github.com/yourgfslove/stress_tester_CLI/internal/worker"
 )
 
@@ -23,6 +23,10 @@ type Command struct {
 	Description string
 	Usage       string
 	Callback    func(ctx context.Context, args []string) error
+}
+
+type Outputer interface {
+	Output(summary models.StressSummary) error
 }
 
 type Commands map[string]Command
@@ -69,11 +73,11 @@ func stressTest(ctx context.Context, cfg config.Config, args []string) error {
 	var contentType string
 
 	fs.IntVar(&rps, "rps", 10, "amount of request per second")
-	fs.StringVar(&link, "link", "https://httpbin.org/get", "link on stress site")
+	fs.StringVar(&link, "link", "http://localhost:8082/restaurants", "link on stress site")
 	fs.StringVar(&method, "method", "GET", "Request method")
 	fs.IntVar(&duration, "sec", 1, "num of seconds doing requests")
-	fs.StringVar(&data, "data", "", "data for response")
-	fs.StringVar(&contentType, "content/type", "", "content/type header for request")
+	fs.StringVar(&data, "body", "", "data for response")
+	fs.StringVar(&contentType, "content-type", "", "content-type header for request")
 
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("failed to parse parameters: %s", err.Error())
@@ -81,7 +85,7 @@ func stressTest(ctx context.Context, cfg config.Config, args []string) error {
 
 	method = strings.ToUpper(method)
 
-	if err := validation.StressParamsValidate(link, method); err != nil {
+	if err := validation.StressParamsValidate(link, method, rps, duration); err != nil {
 		return fmt.Errorf("bad params: %s", err.Error())
 	}
 	transport := &http.Transport{
@@ -108,7 +112,9 @@ func stressTest(ctx context.Context, cfg config.Config, args []string) error {
 				wp.Stop()
 				return
 			case <-ticker.C:
-				req, err := http.NewRequest(method, link, bytes.NewReader([]byte(data)))
+				body := strings.NewReader(data)
+				req, err := http.NewRequest(method, link, body)
+
 				if err != nil {
 					log.Error(fmt.Sprintf("can not create request: %s", err.Error()))
 				}
@@ -121,17 +127,16 @@ func stressTest(ctx context.Context, cfg config.Config, args []string) error {
 		}
 	}()
 
-	summary := make(chan models.StressSummary)
-	go aggregator.Aggregator(summary, wp.Results)
+	summaryChan := make(chan models.StressSummary)
+	go aggregator.Aggregator(summaryChan, wp.Results)
 
-	sum := <-summary
-	fmt.Printf("Number of success requests: %d\n", sum.Success)
-	fmt.Printf("Number of failed requests: %d\n", sum.Fail)
-	fmt.Printf("Average latency: %v\n", sum.AvgLatency)
-	fmt.Printf("Max latency: %v\n", sum.MaxLatency)
-	fmt.Println("Status Codes:")
-	for k, v := range sum.StatusCodes {
-		fmt.Printf(" -%d: %d\n", k, v)
+	sum := <-summaryChan
+	outputer, err := output.NewOutputer(cfg.OutputType, cfg.OutputFolder)
+	if err != nil {
+		return fmt.Errorf("failed to create outputer: %v", err)
+	}
+	if err := outputer.Out(sum); err != nil {
+		return fmt.Errorf("failed to out data: %v", err)
 	}
 	return nil
 }

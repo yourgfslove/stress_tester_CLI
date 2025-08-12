@@ -24,8 +24,17 @@ CLI-инструмент на Go для проведения нагрузочн�
 ``` yaml
 output_folder: "folder_path"
 workers_Amount: 30
-output_format: "JSON/TXT/CSV"
+output_type: "JSON/TXT/CONSOLE"
 ```
 Нужно указать переменную окружения CONFIG_PATH, указывающую путь к `config.yaml` или передавать при запуске с флагом --config
 
 
+## Установка и запуск
+### Установка
+```
+go install github.com/yourgfslove/stress_tester_CLI/cmd/strestester@latest
+```
+### Запуск
+```
+strestester --config="config_path"
+```

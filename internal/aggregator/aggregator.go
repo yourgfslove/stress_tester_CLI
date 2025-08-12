@@ -12,8 +12,8 @@ func Aggregator(summary chan<- models.StressSummary, results <-chan models.Resul
 	var total time.Duration
 	for v := range results {
 		total += v.Duration
-		if v.Duration > sum.MaxLatency {
-			sum.MaxLatency = v.Duration
+		if v.Duration > time.Duration(sum.MaxLatency) {
+			sum.MaxLatency = models.Duration(v.Duration)
 		}
 		sum.URL = v.URL
 		if v.Success {
@@ -23,7 +23,7 @@ func Aggregator(summary chan<- models.StressSummary, results <-chan models.Resul
 			sum.Fail++
 		}
 	}
-	sum.AvgLatency = (total / (time.Duration(sum.Fail) + time.Duration(sum.Success)))
+	sum.AvgLatency = models.Duration(total / (time.Duration(sum.Fail) + time.Duration(sum.Success)))
 	summary <- sum
 	close(summary)
 }
