@@ -22,6 +22,8 @@ func NewOutputer(outputType, outputPath string) (Outputer, error) {
 		return newConsoleOutputer(), nil
 	case typeJson:
 		return newJSONOutputer(outputPath), nil
+	case typeTXT:
+		return newTXTOutputer(outputPath), nil
 	default:
 		return nil, fmt.Errorf("wrong output type")
 	}
